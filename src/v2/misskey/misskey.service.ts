@@ -22,25 +22,35 @@ export class MissKeyService {
   async startAuthorization(website: string): Promise<MissKeyInstance> {
     let model = await this.findMissKeyInstance(website);
     if (!model) {
+      this.logger.log(`Starting to prep create for ${website}`);
       try {
+        this.logger.log(`Generator`);
         const client = generator('misskey', website);
   
+        this.logger.log(`Model Create`);
         model = new this.repository({
           website
         });
 
+        this.logger.log(`Client Register`);
         await client.registerApp('PostyBirb', {} )
           .then(appData => {
             model.client_id = appData.clientId
             model.client_secret = appData.clientSecret
             model.auth_url = appData.url
+          })
+          .catch((err: Error) => {
+            this.logger.error(err, '', `MissKey Auth URL Failure ${website}`);
+            return new ApiResponse({ error: err.message });
           });
+
+          this.logger.log(`Calling model save for ${website}`);
 
         model.save();
 
       } catch (err) {
         this.logger.error(err, '', `MissKey Auth URL Failure ${website}`);
-        throw new InternalServerErrorException(
+        throw new InternalServerErrorException(err,
           `Unable to authorize ${website} at this time`,
         );
       }      
@@ -94,6 +104,7 @@ export class MissKeyService {
   private async findMissKeyInstance(
     website: string,
   ): Promise<MissKeyInstance> {
+    this.logger.log(`Find Instance ${website}`);
     return this.repository.findOne({ website }).exec();
   }
 }
