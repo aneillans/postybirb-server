@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as request from 'requestretry';
+import request from 'requestretry';
 
 @Injectable()
 export class DeviantArtService {
