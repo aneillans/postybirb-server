@@ -6,7 +6,7 @@ name: web-postyfox - Build and Deploy
 on:
   push:
     branches:
-      - cd-deploy
+      - ci-deploy
   workflow_dispatch:
 
 jobs:
