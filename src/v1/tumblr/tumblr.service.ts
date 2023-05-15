@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OAuth } from 'oauth';
-import * as JSON from 'circular-json';
-import * as request from 'request';
-import * as tumblr from 'tumblr.js';
+import JSON from 'circular-json';
+import request from 'request';
+import tumblr from 'tumblr.js';
 import { TumblrAuthDto, TumblrPostDto } from './tumblr.interface';
 
 /**
@@ -209,7 +209,7 @@ export class TumblrService {
 
           reject((json.errors || []).map(error => `${error.title} - ${error.detail}`).join(', '));
         } else {
-          resolve();
+          resolve(null);
         }
       });
     });

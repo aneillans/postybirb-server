@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as _ from 'lodash';
-import * as request from 'request';
+import _ from 'lodash';
+import request from 'request';
 import { ApiResponse } from 'src/v2/common/models/api-response.model';
 import {
   RequestFile,
@@ -28,13 +28,13 @@ export class TwitterService {
     consumer_secret: process.env.TWITTER_SECRET,
   };
 
-  private getClient(token?: TokenResponse) {
+  private getClient(access_token_key? : string, access_token_secret? : string) {
     const config: TwitterOptions = {
       ...this.CONFIG,
     };
-    if (token) {
-      config.access_token_key = token.oauth_token;
-      config.access_token_secret = token.oauth_token_secret;
+    if (access_token_key && access_token_secret) {
+      config.access_token_key = access_token_key;
+      config.access_token_secret = access_token_secret;
     }
     return new Twitter(config);
   }
@@ -43,13 +43,15 @@ export class TwitterService {
     ApiResponse<{ url: string; oauth_token: string }>
   > {
     try {
-      const auth = await this.getClient().getRequestToken('oob');
-      return new ApiResponse({
-        data: {
-          url: `https://api.twitter.com/oauth/authenticate?oauth_token=${auth.oauth_token}`,
-          oauth_token: auth.oauth_token,
-        },
-      });
+      const auth : TokenResponse = await this.getClient().getRequestToken('oob');
+      if (auth.oauth_callback_confirmed === 'true') {
+        return new ApiResponse({
+          data: {
+            url: `https://api.twitter.com/oauth/authenticate?oauth_token=${auth.oauth_token}`,
+            oauth_token: auth.oauth_token,
+          },
+        });
+      }
     } catch (err) {
       this.logger.error(err, err.stack, 'Twitter Auth Start Failure');
       return new ApiResponse({ error: err });
@@ -74,10 +76,7 @@ export class TwitterService {
   async post(
     data: SubmissionPost<{ contentBlur: ContentBlurType }>,
   ): Promise<ApiResponse<{ url: string }>> {
-    const client = this.getClient({
-      oauth_token: data.token,
-      oauth_token_secret: data.secret,
-    });
+    const client = await this.getClient();
 
     const tweets = [];
     const tweet: any = {

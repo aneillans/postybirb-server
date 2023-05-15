@@ -6,9 +6,9 @@ import {
   TwitterPostDto,
   MediaObject,
 } from './twitter.interface';
-import * as request from 'request';
+import request from 'request';
 import partition from 'partition-all';
-import * as streamify from 'streamifier';
+import streamify from 'streamifier';
 import { Readable } from 'stream';
 
 @Injectable()
@@ -331,7 +331,7 @@ export class TwitterService {
             this.logger.error(e);
             reject(e);
           } else {
-            resolve();
+            resolve(null);
           }
         },
       );
